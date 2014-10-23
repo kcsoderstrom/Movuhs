@@ -1,0 +1,55 @@
+<html>
+  <head>
+    <script src="jquery-2.1.1.min.js" type="text/javascript" charset="utf-8"></script>
+    <title>Movuhs</title>
+  </head>
+
+  <body>
+
+    <p>This is in the body.</p>
+    <a class="things" href="javascript:void(0)">Click here to make things happen.</a>
+
+    <ul class="things">
+
+    </ul>
+
+  </body>
+</html>
+
+
+<script>
+  $(function(){
+    var starPile = [];
+    var getUrl = function(num) {
+      return 'http://www.imdb.com/list/ls057823854/?start='+ num +'&view=detail&sort=listorian:asc';
+    };
+
+    $("a.things").on("click", function(){
+
+      $.ajaxPrefilter(function(options) {
+        if(options.crossDomain && jQuery.support.cors) {
+          var http = (window.location.protocol === 'http:' ? 'http:' : 'https:');
+          options.url = http + '//cors-anywhere.herokuapp.com/' + options.url;
+          //options.url = "http://cors.corsproxy.io/url=" + options.url;
+        }
+      });
+
+      $.get(
+        getUrl(starPile.length),
+        function(response) {
+          var $page = $(response);
+          var $infos = $page.find("div.info");
+          var movuhs = [];
+          $infos.each(function(idx, info){
+            var title = $(info).find("b > a").text();
+            var stars = $(info).find("div.rating-list span.value").text();
+
+            movuhs.push({title: title, stars: stars});
+            starPile.push(stars);
+          });
+          console.log(starPile);
+      });
+
+    });
+  });
+</script>
