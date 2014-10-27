@@ -1,0 +1,88 @@
+<html>
+  <head>
+    <script src="jquery-2.1.1.min.js" type="text/javascript" charset="utf-8"></script>
+    <title>Movuhs</title>
+  </head>
+
+  <body>
+
+    <a class="gen-stars" href="javascript:void(0)">
+      Click here to generate a list of all stars.
+    </a>
+    <ul class="stars-list">
+    </ul>
+
+  </body>
+</html>
+
+
+<script>
+  $(function(){
+
+    var avg = 0;
+    var numTimesCalledFetch = 0;
+    var totalMovuhs = 0;
+
+    var starPile = [];
+    var getUrl = function(num) {
+      return 'http://www.imdb.com/list/ls057823854/?start='+ num +'&view=detail&sort=listorian:asc';
+    };
+
+    var averageStars = function(starPile) {
+      var sum = 0;
+      starPile.forEach(function(stars){
+        sum += parseInt(stars);
+      });
+      var newAvg = sum / starPile.length;
+
+      var totalStars = avg * totalMovuhs + newAvg * starPile.length;
+      totalMovuhs += starPile.length;
+
+      avg = totalStars/totalMovuhs;
+      return avg;
+    };
+
+
+    var getStuff = function(){
+      console.log("Started fetch.");
+
+      $.ajaxPrefilter(function(options) {
+        if(options.crossDomain && jQuery.support.cors) {
+          var http = (window.location.protocol === 'http:' ? 'http:' : 'https:');
+          options.url = http + '//cors-anywhere.herokuapp.com/' + options.url;
+          //options.url = "http://cors.corsproxy.io/url=" + options.url;
+        }
+      });
+
+      $.get(
+        getUrl(numTimesCalledFetch * 100),
+        function(response) {
+          var $page = $(response);
+          var $infos = $page.find("div.info");
+          var movuhs = [];
+          var starPile = [];
+          $infos.each(function(idx, info){
+            var title = $(info).find("b > a").text();
+            var stars = $(info).find("div.rating-list span.value").text();
+
+            if(parseInt(stars) === parseInt(stars)){
+              movuhs.push({title: title, stars: stars});
+              starPile.push(stars);
+              $("ul.stars-list").append("<li>" + stars + "</li>");
+            }
+
+          });
+
+          numTimesCalledFetch += 1;
+
+          if(numTimesCalledFetch < 100) {
+            getStuff();
+          }
+      });
+
+    };
+
+  $("a.gen-stars").on("click", getStuff);
+
+  });
+</script>
