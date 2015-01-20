@@ -1,0 +1,235 @@
+<html>
+<head>
+	<script src="all_stars.js"></script>
+	<script src="jquery-2.1.1.min.js"></script>
+	<title>IMDB Stars</title>
+</head>
+<body>
+	<h1>IMDB Movie Rating Stats</h1>
+
+	<ul class="freq-table">
+	</ul>
+
+	<p>Date retrieved: 9 December 2014</p>
+
+	<p>Background: I don't like to watch movies very much. I enjoy watching some movies, especially good movies, but I would rather skip sifting through bad movies until I find one I like.</p>
+
+	<p>Crowdsourcing helps. But often I find a synopsis I like accompanied by an iffy star count. I always wonder, what does this star count mean? How much better is 7 stars than 6 stars? Is 5.5 stars actually the middle, or is that worse than average?</p>
+
+	<p>Process: IMDB doesn't have an API. They do have a list of "all movies", paginated with 10 movies per page (is that the right number?). (I am confident this is not literally all of the movies in the database, since it cuts off at a round number. I would love more information on this and where I can find a list of literally all the movies; you can e-mail me <a href="emailto:jacquelinesoderstrom@gmail.com">here</a>.) So I wrote a loop to send an ajax request to each page, then parsed each html file. I stored one average rating per movie, except for movies that had no ratings, which I discarded. (I later discovered that imdb has some text databases; I have not done anything with them yet.)</p>
+
+	<p>Terminology: "Crowdsourced" below refers to the actual rating at that percentile in the raw data; you can now know what percentage of movies your movie betters. (Perhaps I should make a calculator.) "Normalized" refers to the star rating at that percentile if the average were 5.5 stars, the standard deviation were the same as the raw data's, and the data were normally distributed; if you feel calibrated to normal distributions, this may be useful for you.</p>
+
+	<p>Results: The ratings are skewed upward slightly. The median and mean are approximately equal.</p>
+
+	<ul class="percentiles">
+	</ul>
+
+	<div></div>
+
+	<style>
+		body, html, ul, li, p, h1, div {
+			margin: 0;
+			padding: 0;
+			border: 0;
+			font: inherit;
+		}
+
+		body {
+			font-family: sans-serif;
+		}
+
+		ul, li {
+			list-style: none;
+			padding: 0;
+		}
+
+		ul.freq-table {
+			height: 400px;
+			position: relative;
+			width: 1600px;
+			margin: 0 auto;
+		}
+
+		ul.freq-table > li {
+			float: left;
+			margin: 2px;
+			text-align: left;
+			font-size: 10px;
+			position: relative;
+			top: 400px;
+			width: 6px;
+		}
+
+		li.star li {
+			height: 1px;
+			width: 6px;
+		}
+
+		li.star ul:hover li {
+			border-left: 2px solid black;
+			border-right: 2px solid black;
+			box-sizing: border-box;
+		}
+
+		li.star ul:hover li:first-child {
+			border-top: 2px solid black;
+		}
+
+		li.star ul:hover li:last-child {
+			border-bottom: 2px solid black;
+		}
+
+		li.star ul {
+			position: absolute;
+			left: 0;
+			width: 10px;
+			margin: 0;
+			padding: 0;
+			bottom: 16px;
+		}
+
+		li {
+			padding: 0 2px;
+		}
+
+		p {
+			margin: 20px auto;
+			width: 50%;
+		}
+
+		ul.percentiles {
+			margin: 20px 25%;
+		}
+
+		h1 {
+			margin: 100px 0;
+			font-size: 48px;
+			text-align: center;
+		}
+
+		li.stars-1 {
+			background: #DC932E;
+		}
+
+		li.stars-2 {
+			background: #34CFCA;
+		}
+
+		li.stars-3 {
+			background: #DC932E;
+		}
+
+		li.stars-4 {
+			background: #34CFCA;
+		}
+
+		li.stars-5 {
+			background: #DC932E;
+		}
+
+		li.stars-6 {
+			background: #34CFCA;
+		}
+
+		li.stars-7 {
+			background: #DC932E;
+		}
+
+		li.stars-8 {
+			background: #34CFCA;
+		}
+
+		li.stars-9 {
+			background: #DC932E;
+		}
+
+		div {
+			position: absolute;
+			border: 2px solid black;
+			background: white;
+			display: block;
+		}
+	</style>
+
+	<script>
+		$(function() {
+			var $div = $("div");
+
+			$("ul.freq-table").on("mouseenter", "li.star", function(event) {
+				$div.show();
+				$div.css("left", event.pageX);
+				$div.css("top", event.pageY);
+				$div.html("HEY LOOK AT ME");
+			});
+
+			$(document).on("mousemove", function(event) {
+				var $ul = $("ul.freq-table");
+				if(event.pageY < $ul.offset().top || event.pageY > $ul.offset().top + $ul.height()) {
+					$div.empty();
+					$div.hide();
+				}
+			});
+
+
+			average = function(a) {
+			  var r = {mean: 0, variance: 0, deviation: 0}, t = a.length;
+			  for(var m, s = 0, l = t; l--; s += a[l]);
+			  for(m = r.mean = s / t, l = t, s = 0; l--; s += Math.pow(a[l] - m, 2));
+			  return r.deviation = Math.sqrt(r.variance = s / t), r;
+			}
+
+			var starFreqs = {};
+
+			$stars.forEach(function(star){
+				if(starFreqs[star]) {
+					starFreqs[star] += 1;
+				} else {
+					starFreqs[star] = 1;
+				}
+			});
+
+			var sorted = Object.keys(starFreqs).sort(function(a,b){return parseFloat(a) - parseFloat(b);})
+
+			var i = 1;
+			while(i < 10) {
+				$("ul.freq-table").append('<li class="star"><ul data-num="' + i + '"></ul></li>');
+				if(sorted.indexOf(i + "") !== -1) {
+					var j = 0;
+					while(j < starFreqs[i]) {
+						$("ul.freq-table").find("li.star ul").last().append('<li>');
+						$("ul.freq-table").find("li.star ul li").last().addClass('stars-' + Math.floor(i));
+						j += 1;
+					}
+				}
+				i += 0.1;
+				i = Math.round(i * 10) / 10;
+			}
+
+			var x = average($stars);
+			var mean = x.mean;
+			var stdev = x.deviation;
+
+			var sortedStars = $stars.sort(function(a,b){return a - b;});
+
+			$("ul.percentiles").append("<li>1%: Normalized = " + Math.round((-2.326 * stdev + 5.5) * 10) / 10 + "; Crowdsourced = " + sortedStars[Math.round(sortedStars.length / 100)] + "</li>");
+			$("ul.percentiles").append("<li>2.5%: Normalized = " + Math.round((-1.960 * stdev + 5.5) * 10) / 10 + "; Crowdsourced = " + sortedStars[Math.round(sortedStars.length / 100 * 2.5)] + "</li>");
+			$("ul.percentiles").append("<li>5%: Normalized = " + Math.round((-1.645 * stdev + 5.5) * 10) / 10 + "; Crowdsourced = " + sortedStars[Math.round(sortedStars.length / 100 * 5)] + "</li>");
+			$("ul.percentiles").append("<li>10%: Normalized = " + Math.round((-1.282 * stdev + 5.5) * 10) / 10 + "; Crowdsourced = " + sortedStars[Math.round(sortedStars.length / 100 * 10)] + "</li>");
+			$("ul.percentiles").append("<li>25%: Normalized = " + Math.round((-0.675 * stdev + 5.5) * 10) / 10 + "; Crowdsourced = " + sortedStars[Math.round(sortedStars.length / 100 * 25)] + "</li>");
+			$("ul.percentiles").append("<li>50%: Normalized = " + Math.round((0 * stdev + 5.5) * 10) / 10 + "; Crowdsourced = " + sortedStars[Math.round(sortedStars.length / 100 * 50)] + "</li>");
+			$("ul.percentiles").append("<li>75%: Normalized = " + Math.round((0.675 * stdev + 5.5) * 10) / 10 + "; Crowdsourced = " + sortedStars[Math.round(sortedStars.length / 100 * 75)] + "</li>");
+			$("ul.percentiles").append("<li>90%: Normalized = " + Math.round((1.282 * stdev + 5.5) * 10) / 10 + "; Crowdsourced = " + sortedStars[Math.round(sortedStars.length / 100 * 90)] + "</li>");
+			$("ul.percentiles").append("<li>95%: Normalized = " + Math.round((1.645 * stdev + 5.5) * 10) / 10 + "; Crowdsourced = " + sortedStars[Math.round(sortedStars.length / 100 * 95)] + "</li>");
+			$("ul.percentiles").append("<li>97.5%: Normalized = " + Math.round((1.960 * stdev + 5.5) * 10) / 10 + "; Crowdsourced = " + sortedStars[Math.round(sortedStars.length / 100 * 97.5)] + "</li>");
+			$("ul.percentiles").append("<li>99%: Normalized = " + Math.round((2.326 * stdev + 5.5) * 10) / 10 + "; Crowdsourced = " + sortedStars[Math.round(sortedStars.length / 100 * 99)] + "</li>");
+
+			$("ul.percentiles").append("<li>Standard deviation: " + Math.round(stdev * 10) / 10
+																							 + "; mean: " + Math.round(mean * 10) / 10
+																							 + "; median: " + $stars.sort()[Math.floor($stars.length / 2)]
+																							 + "<li>");
+		});
+
+	</script>
+</body>
+</html>
