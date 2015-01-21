@@ -2,8 +2,9 @@
 <!-- saved from url=(0052)file:///Users/appacademy/Desktop/movuhs/display.html -->
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 	<script src="all_stars.js"></script>
-	<script src="jquery-2.1.1.min.js"></script>
-	<title>IMDB Stars</title>
+	<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+	<title>Movie Rankings Calculator</title>
 </head>
 <body>
 	<h1>How dat movie rank doe?</h1>
@@ -31,6 +32,8 @@
 		<p>IMDB doesn't have an API. They do have a list of "<a href="http://www.imdb.com/list/ls057823854/">all movies</a>", paginated with 100 movies per page. (I am confident this does not comprise literally all of the movies in the database from 1970-2014, since it cuts off at a round number. I would love more information on this and where I can find an actual list of all movies; you can e-mail me <a href="emailto:jacquelinesoderstrom@gmail.com">here</a>.)</p>
 
 		<p>To address this, I wrote a loop to send an ajax request to each page, then parsed each html file. I stored one average rating per movie, except for movies that had no ratings, which I discarded. (I later discovered that IMDB has some text databases; I may use those in the future.)</p>
+
+		<p>You can see more of my work <a href="http://jacqueline.soderstrom.me">here</a> or visit my github <a href="github.com/kcsoderstrom">here</a>.</p>
 	</section>
 
 <!-- 	<ul class="percentiles">
@@ -182,7 +185,7 @@
 			position: absolute;
 			border: 2px solid #333;
 			background: white;
-			display: block;
+			display: none;
 			padding: 10px;
 		}
 
